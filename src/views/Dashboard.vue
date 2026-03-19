@@ -27,8 +27,16 @@ const goToEditUser = (id: string) => {
   router.push(`/user/${id}/edit`);
 };
 
-const goToDeleteUser = (id: string) => {
-  router.push(`/user/${id}/delete`);
+const handleDeleteUser = (id: string) => {
+  // abrir modal de confirmação
+  const confirmed = confirm(
+    `Tem certeza que deseja excluir ${users.value.find((user) => user.id === id)?.name}`,
+  );
+
+  if (confirmed) {
+    users.value = users.value.filter((user) => user.id !== id);
+    loadUsers();
+  }
 };
 
 onMounted(() => {
@@ -61,7 +69,7 @@ onMounted(() => {
             severity="primary"
           />
           <Button
-            @click="goToDeleteUser(user.id)"
+            @click="handleDeleteUser(user.id)"
             icon="pi pi-trash"
             label="Excluir"
             severity="danger"
