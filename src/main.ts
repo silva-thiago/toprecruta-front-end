@@ -1,7 +1,7 @@
 import { createApp } from "vue";
 
 import App from "@/App.vue";
-import router from "./router";
+import router from "@/router";
 
 import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
@@ -16,7 +16,10 @@ createApp(App)
     inputVariant: "filled",
     theme: {
       preset: Aura,
-      options: { darkModeSelector: "system", cssLayer: false },
+      options: {
+        darkModeSelector: "system",
+        cssLayer: true,
+      },
     },
     zIndex: {
       modal: 1100,
