@@ -1,330 +1,126 @@
 @import "tailwindcss";
 
 :root {
-  /* Paleta do Figma */
+  /* --- Tokens da Paleta de Cores (Figma) --- */
   --brand-dark: oklch(17.12% 0.0739 260.99); /* #000C2F */
   --brand-muted: oklch(53.28% 0.0689 225.56); /* #3C758B */
   --accent: oklch(59.78% 0.1256 234.77); /* #048ABF */
   --danger: oklch(44.09% 0.1725 28.23); /* #9C0E0E */
 
+  /* --- Tokens Neutros --- */
   --neutral-900: oklch(23.5% 0 0); /* #1E1E1E */
   --neutral-600: oklch(53.13% 0 0); /* #6C6C6C */
   --neutral-400: oklch(77.31% 0 0); /* #B5B5B5 */
   --neutral-100: oklch(97.57% 0.0017 247.84); /* #F6F7F8 */
 
-  /* Tokens semânticos */
-  --bg: oklch(97.57% 0.0017 247.84);
-  --surface: oklch(99% 0.0015 247);
-  --surface-muted: oklch(96.8% 0.0017 247.84);
+  /* --- Tokens Semânticos --- */
+  --bg: var(--neutral-100);
+  --surface: oklch(100% 0 0);
   --surface-soft: oklch(95.2% 0.0016 247.84);
 
-  --text: oklch(53.13% 0 0);
-  --text-h: oklch(17.12% 0.0739 260.99);
-  --text-muted: oklch(69% 0 0);
-  --text-inverse: oklch(100% 0 0);
+  --text: var(--neutral-600);
+  --text-h: var(--brand-dark);
+  --text-muted: var(--neutral-400);
 
   --border: oklch(88% 0 0);
-  --border-strong: oklch(77.31% 0 0);
+  --border-strong: var(--neutral-400);
 
-  --accent-bg: oklch(59.78% 0.1256 234.77 / 0.1);
-  --accent-border: oklch(59.78% 0.1256 234.77 / 0.45);
-
-  --danger-bg: oklch(44.09% 0.1725 28.23 / 0.08);
-  --danger-border: oklch(44.09% 0.1725 28.23 / 0.4);
-
-  --code-bg: oklch(96.8% 0.0017 247.84);
-  --social-bg: oklch(96.8% 0.0017 247.84 / 0.6);
-
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.12);
-  --shadow: var(--shadow-md);
-
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 20px;
-
-  --heading: "Montserrat", sans-serif;
-  --mono: ui-monospace, "Cascadia Code", "Source Code Pro", Consolas, monospace;
-  --sans: "Montserrat", system-ui, -apple-system, sans-serif;
-
-  --container: 1110px;
-  --footer-height: 111px;
-  --header-height: 84px;
+  /* Sombras */
+  --shadow-card: 0 10px 40px -10px rgba(0, 12, 47, 0.08);
 }
 
+/* --- Tema Dark --- */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: oklch(23.5% 0 0);
     --surface: oklch(27% 0 0);
-    --surface-muted: oklch(30% 0 0);
     --surface-soft: oklch(33% 0 0);
 
     --text: oklch(82% 0 0);
     --text-h: oklch(97.57% 0.0017 247.84);
     --text-muted: oklch(70% 0 0);
-    --text-inverse: oklch(100% 0 0);
 
     --border: oklch(38% 0 0);
     --border-strong: oklch(53.13% 0 0);
 
-    --code-bg: oklch(20% 0 0);
-    --social-bg: oklch(30% 0 0 / 0.5);
-
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
-    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.24);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.28);
-    --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.34);
-    --shadow: var(--shadow-md);
+    --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
   }
 }
 
+@theme {
+  /* Configuração das Cores para o Tailwind */
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-muted: var(--brand-muted);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+
+  --color-text: var(--text);
+  --color-text-h: var(--text-h);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  /* Tipografia e Outros */
+  --font-sans: "Montserrat", system-ui, sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+}
+
+/* --- Base Global --- */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html {
-  font-family: var(--sans);
-}
-
+html,
 body {
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--text);
-  font: 18px/1.45 var(--sans);
-  font-synthesis: none;
-  letter-spacing: 0;
+  font-family: var(--font-sans);
   margin: 0;
-  min-width: 320px;
-  text-rendering: optimizeLegibility;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-@media (max-width: 1024px) {
-  body {
-    font-size: 16px;
-  }
-}
-
+/* --- Ajuste de Títulos --- */
 h1,
 h2,
 h3,
 h4 {
   color: var(--text-h);
-  font-family: var(--heading);
+  font-family: var(--font-heading);
+  font-weight: 700;
   margin: 0;
 }
 
-h1 {
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.1;
-  margin: 0 0 24px;
+/* --- Estilização PrimeVue (Light/Dark) --- */
+.p-inputtext {
+  @apply bg-surface border-border text-text placeholder:text-text-muted rounded-lg transition-all focus:border-accent focus:ring-1 focus:ring-accent/20;
 }
 
-@media (max-width: 1024px) {
-  h1 {
-    font-size: 24px;
-    margin: 0 0 16px;
-  }
+.p-button.p-button-primary {
+  @apply bg-accent border-accent text-white hover:brightness-110 active:scale-95;
 }
 
-h2 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.18;
-  margin: 0 0 8px;
+.p-radiobutton-box.p-highlight {
+  @apply bg-accent border-accent;
 }
 
-@media (max-width: 1024px) {
-  h2 {
-    font-size: 20px;
-  }
-}
-
-p {
-  margin: 0;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-code {
-  background: var(--code-bg);
-  border-radius: 4px;
-  color: var(--text-h);
-  display: inline-flex;
-  font-family: var(--mono);
-  font-size: 14px;
-  line-height: 1.35;
-  padding: 4px 8px;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-img {
-  display: block;
-  max-width: 100%;
-}
-
+/* --- Layout Principal --- */
 #app {
   display: grid;
   box-sizing: border-box;
-  grid-template-rows: auto 1fr auto;
   margin: 0 auto;
   max-width: 100%;
   min-height: 100svh;
   text-align: left;
-  width: min(100%, 1440px);
-}
-
-/* Utilitários base do layout */
-.page-shell {
-  min-height: 100svh;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-}
-
-.page-main {
-  flex: 1;
   width: 100%;
 }
-
-.page-container {
-  width: min(100% - 64px, var(--container));
-  margin-inline: auto;
-}
-
-@media (max-width: 1024px) {
-  .page-container {
-    width: min(100% - 32px, var(--container));
-  }
-}
-
-/* Cards e superfícies */
-/*.surface-card {
-  background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-}
-
-.surface-soft {
-  background: var(--surface-soft);
-  border-radius: var(--radius-lg);
-}*/
-
-/* Inputs genéricos */
-/*.field-label {
-  color: var(--text);
-  display: inline-block;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.field-heading {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.form-control {
-  width: 100%;
-  min-height: 40px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--text-h);
-  padding: 0 14px;
-  outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.form-control::placeholder {
-  color: var(--text-muted);
-}
-
-.form-control:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
-}*/
-
-/* Botões base */
-/*.btn {
-  min-width: 120px;
-  min-height: 40px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--sans);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1;
-  padding: 0 18px;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 0 3px var(--accent-bg);
-}
-
-.btn-outline {
-  background: var(--surface);
-  border-color: var(--brand-muted);
-  color: var(--brand-muted);
-}
-
-.btn-outline:hover:not(:disabled) {
-  background: oklch(98% 0.002 247 / 1);
-}
-
-.btn-muted {
-  background: var(--neutral-400);
-  color: var(--text-inverse);
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: var(--text-inverse);
-}
-
-.btn-danger:hover:not(:disabled) {
-  box-shadow: 0 0 0 3px var(--danger-bg);
-}*/
