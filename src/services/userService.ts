@@ -31,8 +31,13 @@ export const getUsers = (): User[] => {
 };
 
 export const getUserById = (id: string): User | undefined => {
-  const users = getUsers();
-  return users.find((user) => user.id === id);
+  try {
+    const users = getUsers();
+    return users.find((user) => user.id === id);
+  } catch (error) {
+    console.error("Erro ao tentar obter o usuário:", error);
+    return undefined;
+  }
 };
 
 export const updateUser = (updateUser: User): void => {
