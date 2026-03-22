@@ -7,29 +7,9 @@ const displayYears = startYear
 </script>
 
 <template>
-  <footer class="app-footer">
-    <p>
+  <footer class="h-28 bg-brand-muted flex items-center justify-center px-6">
+    <p class="text-white text-sm text-center font-medium opacity-90">
       &copy; {{ displayYears }} TopRecruta&trade;. Todos os direitos reservados.
     </p>
   </footer>
 </template>
-
-<style scoped>
-/* Footer base */
-.app-footer {
-  align-items: center;
-  background: var(--brand-muted);
-  color: var(--text-inverse);
-  display: flex;
-  justify-content: center;
-  min-height: var(--footer-height);
-  padding: 16px;
-  text-align: center;
-}
-
-.app-footer p {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.55;
-}
-</style>

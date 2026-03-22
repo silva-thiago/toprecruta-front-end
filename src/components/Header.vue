@@ -5,14 +5,6 @@ import Button from "primevue/button";
 
 const router = useRouter();
 
-const goToDashboard = () => {
-  router.push("/");
-};
-
-const goToCreateUser = () => {
-  router.push("/user/new");
-};
-
 const logout = () => {
   localStorage.removeItem("auth");
   router.push("/login");
@@ -20,82 +12,31 @@ const logout = () => {
 </script>
 
 <template>
-  <header class="app-header">
-    <div class="app-header__content">
-      <Button
-        @click="goToDashboard"
-        class="nav-btn"
-        icon="pi pi-users"
-        label="Usuários"
-        severity="primary"
-        variant="link"
-      />
-      <Button
-        @click="goToCreateUser"
-        class="nav-btn"
-        icon="pi pi-plus-circle"
-        label="Adicionar usuário"
-        severity="primary"
-        variant="link"
-      />
+  <header
+    class="h-28 bg-white dark:bg-neutral-900 border-b border-neutral-100 px-6 flex justify-center items-center"
+  >
+    <nav
+      class="container flex justify-between items-center sm:gap-4 md:gap-6 lg:gap-12 max-w-6xl"
+    >
+      <RouterLink
+        to="/"
+        class="flex items-center gap-2 text-brand-dark dark:text-white font-semibold hover:text-accent transition-colors"
+        ><i class="pi pi-users text-lg"></i><span>Usuários</span></RouterLink
+      >
+      <RouterLink
+        to="/user/new"
+        class="flex items-center gap-2 text-brand-dark dark:text-white font-semibold hover:text-accent transition-colors"
+        ><i class="pi pi-plus-circle text-lg"></i
+        ><span>Adicionar</span> usuário</RouterLink
+      >
       <Button
         @click="logout"
-        class="nav-btn nav-btn-danger"
+        class="flex items-center gap-2 text-danger font-bold hover:opacity-80 transition-opacity"
         icon="pi pi-sign-out"
         label="Sair"
         severity="danger"
         variant="link"
       />
-    </div>
+    </nav>
   </header>
 </template>
-
-<style scoped>
-/* Header base */
-.app-header {
-  min-height: var(--header-height);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-
-.app-header__content {
-  width: min(100% - 64px, var(--container));
-  min-height: var(--header-height);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 24px;
-}
-
-.nav-btn {
-  background: transparent;
-  border: 0;
-  color: var(--brand-dark);
-  cursor: pointer;
-  font: 16px/1 var(--sans);
-  font-weight: 600;
-}
-
-.nav-btn-danger {
-  color: var(--danger);
-}
-
-@media (max-width: 768px) {
-  .app-header {
-    min-height: 80px;
-  }
-
-  .app-header__content {
-    gap: 12px;
-    justify-content: space-between;
-    min-height: 80px;
-    padding: 0 12px;
-    width: min(100% - 30px, var(--container));
-  }
-
-  .nav-btn {
-    font-size: 12px;
-  }
-}
-</style>
