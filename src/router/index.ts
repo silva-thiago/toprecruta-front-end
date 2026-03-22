@@ -4,8 +4,13 @@ import DashboardView from "@/views/Dashboard.vue";
 import UserFormView from "@/views/UserForm.vue";
 
 const routes = [
-  { path: "/login", component: LoginView },
-  { path: "/", component: DashboardView, meta: { requiresAuth: true } },
+  { path: "/login", name: "login", component: LoginView },
+  {
+    path: "/",
+    name: "dashboard",
+    component: DashboardView,
+    meta: { requiresAuth: true },
+  },
   {
     path: "/user/new",
     name: "user-create",
@@ -18,7 +23,7 @@ const routes = [
     component: UserFormView,
     meta: { requiresAuth: true },
   },
-  { path: "/:pathMatch(.*)", redirect: "/" },
+  { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 
 const router = createRouter({
@@ -34,7 +39,7 @@ router.beforeEach((to, _from, next) => {
     return next("/login");
   }
   // Usuário autenticado, mas tentando acessar /login → redirecionado para /
-  if (to.path === "/login" && isAuthenticated) {
+  if (to.name === "/login" && isAuthenticated) {
     return next("/");
   }
 
