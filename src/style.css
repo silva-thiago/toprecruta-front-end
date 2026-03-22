@@ -70,6 +70,20 @@
   --font-heading: "Montserrat", sans-serif;
 }
 
+@layer components {
+  /* Alvo: O placeholder e o container da lista do Select */
+  .p-placeholder {
+    color: var(--text-muted);
+  }
+
+  .p-select-list {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
 /* --- Base Global --- */
 *,
 *::before,
@@ -82,6 +96,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
+  font-size: 1em;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;

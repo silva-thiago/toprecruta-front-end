@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { Form, FormField } from "@primevue/forms";
+import Form from "@primevue/forms/form";
+import { FormField } from "@primevue/forms";
+import type { FormInstance } from "@primevue/forms";
+import Fieldset from "primevue/fieldset";
 import InputText from "primevue/inputtext";
+import DatePicker from "primevue/datepicker";
+import Select from "primevue/select";
 import RadioButton from "primevue/radiobutton";
 import RadioButtonGroup from "primevue/radiobuttongroup";
 import Button from "primevue/button";
+import Message from "primevue/message";
 
 import { createUser, getUserById, updateUser } from "@/services/userService";
 import type { User } from "@/types/user";
@@ -16,11 +22,18 @@ const router = useRouter();
 
 const isEditMode = computed(() => route.name === "user-edit");
 
-const form = reactive<User>({
-  id: "",
+const existingCreatedAt = ref(0);
+
+const roles = [
+  { label: "Dev Back-end", value: "Dev Back-end" },
+  { label: "Dev Front-end", value: "Dev Front-end" },
+  { label: "Dev Full Stack", value: "Dev Full Stack" },
+  { label: "UX/UI Designer", value: "UX/UI Designer" },
+];
+
+const initialValues = ref({
   name: "",
-  birthdate: "",
-  age: 0,
+  birthdate: null as Date | null,
   gender: "",
   role: "",
   zipcode: "",
@@ -28,14 +41,99 @@ const form = reactive<User>({
   neighborhood: "",
   city: "",
   state: "",
-  createdAt: 0,
 });
 
-const calculateAge = (date: string): number => {
-  if (!date) return 0;
+const resolver = ({ values }: { values: Record<string, any> }) => {
+  const errors: Record<string, { message: string }[]> = {};
+
+  const requiredFields = [
+    "name",
+    "birthdate",
+    "gender",
+    "role",
+    "zipcode",
+    "street",
+    "neighborhood",
+    "city",
+    "state",
+  ];
+
+  requiredFields.forEach((field) => {
+    const value = values[field];
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === "" ||
+      (value instanceof Date && Number.isNaN(value.getTime()))
+    ) {
+      errors[field] = [{ message: "Campo obrigatório." }];
+    }
+  });
+
+  if (values.name && values.name.length > 100) {
+    errors.name = [{ message: "Nome deve ter no máximo 100 caracteres." }];
+  }
+
+  const zipcode = String(values.zipcode ?? "").replace(/\D/g, "");
+  if (values.zipcode && !/^\d{8}$/.test(zipcode)) {
+    errors.zipcode = [{ message: "Formato de CEP inválido." }];
+  }
+
+  return { values, errors };
+};
+
+const sanitizeZipcode = (value: string): string => value.replace(/\D/g, "");
+
+const fetchAddressByZipcode = async (zipcode: string) => {
+  const zipCode = sanitizeZipcode(zipcode);
+
+  if (!/^\d{8}$/.test(zipCode)) {
+    throw new Error("Formato de CEP inválido.");
+  }
+
+  const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
+  const data = await response.json();
+
+  if (data.erro) {
+    throw new Error("CEP não encontrado.");
+  }
+
+  return data;
+};
+
+const formRef = ref<FormInstance | null>(null);
+
+const fillAddress = async () => {
+  try {
+    const form = formRef.value;
+
+    if (!form) return;
+
+    const zipcodeValue = String(form.states.zipcode?.value ?? "");
+    const data = await fetchAddressByZipcode(zipcodeValue);
+
+    form.setFieldValue("street", data.logradouro ?? "");
+    form.setFieldValue("neighborhood", data.bairro ?? "");
+    form.setFieldValue("city", data.localidade ?? "");
+    form.setFieldValue("state", data.uf ?? "");
+  } catch (error) {
+    const form = formRef.value;
+
+    if (!form) return;
+
+    form.setFieldValue("street", "");
+    form.setFieldValue("neighborhood", "");
+    form.setFieldValue("city", "");
+    form.setFieldValue("state", "");
+  }
+};
+
+const calculateAge = (date: Date | string): number => {
+  const birthdate = new Date(date);
+  if (Number.isNaN(birthdate.getTime())) return 0;
 
   const today = new Date();
-  const birthdate = new Date(date);
   let age = today.getFullYear() - birthdate.getFullYear();
   const monthDifference = today.getMonth() - birthdate.getMonth();
 
@@ -49,32 +147,39 @@ const calculateAge = (date: string): number => {
   return age;
 };
 
-const fillForm = (user: User) => {
-  Object.assign(form, user);
-};
+const onSubmit = ({
+  valid,
+  values,
+}: {
+  valid: boolean;
+  values: Record<string, any>;
+}) => {
+  if (!valid) return;
 
-const resetForm = () => {
-  form.id = "";
-  form.name = "";
-  form.birthdate = "";
-  form.age = 0;
-  form.gender = "";
-  form.role = "";
-  form.zipcode = "";
-  form.street = "";
-  form.neighborhood = "";
-  form.city = "";
-  form.state = "";
-  form.createdAt = 0;
-};
+  const birthdate =
+    values.birthdate instanceof Date
+      ? values.birthdate.toISOString().split("T")[0]
+      : String(values.birthdate ?? "");
 
-const handleSubmit = () => {
-  form.age = calculateAge(form.birthdate);
+  const user: User = {
+    id: isEditMode.value ? String(route.params.id) : Date.now().toString(),
+    name: String(values.name ?? "").trim(),
+    birthdate,
+    age: calculateAge(values.birthdate),
+    gender: String(values.gender ?? ""),
+    role: String(values.role ?? ""),
+    zipcode: sanitizeZipcode(String(values.zipcode ?? "")),
+    street: String(values.street ?? "").trim(),
+    neighborhood: String(values.neighborhood ?? "").trim(),
+    city: String(values.city ?? "").trim(),
+    state: String(values.state ?? "").trim(),
+    createdAt: isEditMode.value ? existingCreatedAt.value : Date.now(),
+  };
 
   if (isEditMode.value) {
-    updateUser({ ...form });
+    updateUser(user);
   } else {
-    createUser({ ...form, id: Date.now().toString(), createdAt: Date.now() });
+    createUser(user);
   }
 
   router.push("/");
@@ -83,15 +188,26 @@ const handleSubmit = () => {
 onMounted(() => {
   if (!isEditMode.value) return;
 
-  const id = String(route.params.id);
-  const user = getUserById(id);
+  const user = getUserById(String(route.params.id));
 
   if (!user) {
     router.push("/");
     return;
   }
 
-  fillForm(user);
+  existingCreatedAt.value = user.createdAt;
+
+  initialValues.value = {
+    name: user.name,
+    birthdate: user.birthdate ? new Date(user.birthdate) : null,
+    gender: user.gender,
+    role: user.role,
+    zipcode: user.zipcode,
+    street: user.street,
+    neighborhood: user.neighborhood,
+    city: user.city,
+    state: user.state,
+  };
 });
 </script>
 
@@ -103,179 +219,287 @@ onMounted(() => {
       </h1>
     </div>
 
-    <Fieldset legend="Adicionar usuário">
-      <Form
-        @submit.prevent="handleSubmit"
-        class="max-w-4xl mx-auto flex flex-col gap-10"
+    <Form
+      ref="formRef"
+      v-slot="$form"
+      :initialValues="initialValues"
+      :resolver="resolver"
+      @submit="onSubmit"
+      class="flex flex-col max-w-4xl mx-auto gap-6"
+    >
+      <Fieldset
+        class="flex flex-col bg-surface-soft p-10 rounded-2xl shadow-sm gap-12"
       >
-        <div
-          class="flex flex-col bg-surface-soft p-10 rounded-2xl shadow-sm gap-8"
-        >
-          <div class="flex flex-row gap-6">
-            <FormField class="col-span-8 flex flex-auto flex-col gap-2">
-              <label class="text-sm" for="name">Nome</label>
-              <InputText
-                v-model="form.name"
-                class="w-full h-12 rounded"
-                id="name"
-                placeholder="Digite o nome do usário"
-                type="text"
-              />
-            </FormField>
-
-            <FormField class="col-span-4 flex flex-col gap-2">
-              <label class="text-sm"> Gênero </label>
-              <RadioButtonGroup
-                name="gender"
-                class="flex items-center gap-6 h-12"
-              >
-                <div class="flex items-center gap-2">
-                  <label class="text-sm" for="male">Masculino</label>
-                  <RadioButton
-                    v-model="form.gender"
-                    inputId="male"
-                    class="bg-white rounded-full"
-                    value="Masculino"
-                    type="checkbox"
-                  />
-                </div>
-                <div class="flex items-center gap-2">
-                  <label class="text-sm" for="female">Feminino</label>
-                  <RadioButton
-                    v-model="form.gender"
-                    inputId="female"
-                    class="bg-white rounded-full"
-                    value="Feminino"
-                    type="checkbox"
-                  />
-                </div>
-              </RadioButtonGroup>
-            </FormField>
-          </div>
-
-          <div class="flex flex-row gap-6">
-            <FormField class="col-span-3 flex flex-col gap-2">
-              <label class="text-sm" for="name">Data de Nascimento</label>
-              <InputText
-                v-model="form.birthdate"
-                class="w-full h-12 rounded"
-                id="name"
-                placeholder="DD/MM/AAAA"
-                type="date"
-              />
-            </FormField>
-
-            <FormField class="col-span-9 flex flex-auto flex-col gap-2">
-              <label class="text-sm" for="role">Função</label>
-              <select
-                v-model="form.role"
-                id="role"
-                class="w-full h-12 rounded bg-white"
-              >
-                <option value="" disabled>Selecione...</option>
-                <option value="Dev Back-end">Dev Back-end</option>
-                <option value="Dev Front-end">Dev Front-end</option>
-                <option value="Dev Full Stack">Dev Full Stack</option>
-                <option value="UX/UI Designer">UX/UI Designer</option>
-              </select>
-            </FormField>
-          </div>
-
-          <p class="text-sm font-bold text-brand-dark col-span-12">Endereço</p>
-
-          <div class="flex flex-row gap-6">
-            <FormField name="zipcode" class="col-span-4 flex flex-col gap-2">
-              <label class="text-sm" for="zipcode"> CEP </label>
-              <InputText
-                v-model="form.zipcode"
-                id="zipcode"
-                placeholder="Digite o CEP"
-                class="w-full h-12 rounded"
-                type="text"
-              />
-            </FormField>
-
-            <FormField
-              name="street"
-              class="col-span-8 flex flex-auto flex-col gap-2"
+        <div class="flex flex-row gap-6">
+          <FormField
+            v-slot="$field"
+            class="col-span-8 flex flex-auto flex-col gap-2"
+            name="name"
+          >
+            <label for="name">Nome</label>
+            <InputText
+              fluid
+              class="w-full h-12 rounded"
+              id="name"
+              placeholder="Digite o nome do usário"
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
             >
-              <label class="text-sm" for="street"> Rua </label>
-              <InputText
-                v-model="form.street"
-                id="street"
-                class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
-                readonly
-                type="text"
-              />
-            </FormField>
-          </div>
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
 
-          <div class="flex flex-row gap-6">
-            <FormField
-              name="neighborhood"
-              class="col-span-4 flex flex-col gap-2"
+          <FormField
+            v-slot="$field"
+            class="col-span-4 flex flex-col gap-2"
+            name="gender"
+          >
+            <label>Gênero</label>
+            <RadioButtonGroup
+              class="flex items-center gap-6 h-12"
+              name="gender"
             >
-              <label class="text-sm" for="neighborhood"> Bairro </label>
-              <InputText
-                v-model="form.neighborhood"
-                id="neighborhood"
-                class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
-                readonly
-                type="text"
-              />
-            </FormField>
-
-            <FormField
-              name="city"
-              class="col-span-6 flex flex-auto flex-col gap-2"
+              <div class="flex items-center gap-2">
+                <label for="male">Masculino</label>
+                <RadioButton
+                  inputId="male"
+                  class="bg-white rounded-full"
+                  value="Masculino"
+                  type="checkbox"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="female">Feminino</label>
+                <RadioButton
+                  inputId="female"
+                  class="bg-white rounded-full"
+                  value="Feminino"
+                  type="checkbox"
+                />
+              </div>
+            </RadioButtonGroup>
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
             >
-              <label class="text-sm" for="city"> Cidade </label>
-              <InputText
-                v-model="form.city"
-                id="city"
-                class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
-                readonly
-                type="text"
-              />
-            </FormField>
-
-            <FormField name="state" class="col-span-2 flex flex-col gap-2">
-              <label class="text-sm" for="state"> Estado </label>
-              <InputText
-                v-model="form.state"
-                id="state"
-                class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
-                readonly
-                type="text"
-              />
-            </FormField>
-          </div>
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
         </div>
 
-        <div class="flex justify-between">
+        <div class="flex flex-row gap-6">
+          <FormField
+            v-slot="$field"
+            class="col-span-3 flex flex-col gap-2"
+            name="birthdate"
+          >
+            <label for="birthdate">Data de Nascimento</label>
+            <DatePicker
+              fluid
+              class="w-full h-12 rounded"
+              dateformat="dd/mm/yyyy"
+              id="birthdate"
+              name="birthdate"
+              placeholder="DD/MM/AAAA"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+
+          <FormField
+            v-slot="$field"
+            class="col-span-9 flex flex-auto flex-col gap-2"
+            name="role"
+          >
+            <label for="role">Função</label>
+            <Select
+              fluid
+              :options="roles"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione..."
+              id="role"
+              class="flex items-center w-full h-12 p-2 rounded bg-white"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+        </div>
+
+        <p class="text-sm font-semibold text-brand-dark col-span-12 my-4">
+          Endereço
+        </p>
+
+        <div class="flex flex-row gap-6">
+          <FormField
+            v-slot="$field"
+            class="col-span-4 flex flex-col gap-2"
+            name="zipcode"
+          >
+            <label for="zipcode"> CEP </label>
+            <InputText
+              fluid
+              @blur="fillAddress"
+              data-zipcode
+              id="zipcode"
+              placeholder="Digite o CEP"
+              class="w-full h-12 rounded"
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+
+          <FormField
+            v-slot="$field"
+            class="col-span-8 flex flex-auto flex-col gap-2"
+            name="street"
+          >
+            <label for="street"> Rua </label>
+            <InputText
+              fluid
+              data-street
+              id="street"
+              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
+              readonly
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+        </div>
+
+        <div class="flex flex-row gap-6">
+          <FormField
+            v-slot="$field"
+            class="col-span-4 flex flex-col gap-2"
+            name="neighborhood"
+          >
+            <label for="neighborhood"> Bairro </label>
+            <InputText
+              fluid
+              data-neighborhood
+              id="neighborhood"
+              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
+              readonly
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+
+          <FormField
+            v-slot="$field"
+            class="col-span-6 flex flex-auto flex-col gap-2"
+            name="city"
+          >
+            <label for="city"> Cidade </label>
+            <InputText
+              fluid
+              data-city
+              id="city"
+              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
+              readonly
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+
+          <FormField
+            v-slot="$field"
+            class="col-span-2 flex flex-col gap-2"
+            name="state"
+          >
+            <label for="state"> Estado </label>
+            <InputText
+              fluid
+              data-state
+              id="state"
+              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
+              readonly
+              type="text"
+            />
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $field.error?.message }}
+            </Message>
+          </FormField>
+        </div>
+      </Fieldset>
+
+      <div class="flex justify-between">
+        <Button
+          label="Cancelar"
+          severity="primary"
+          variant="outlined"
+          class="bg-transparent! border border-accent! text-accent! px-10 h-11 rounded"
+          type="button"
+          @click="router.push('/')"
+        />
+        <div class="flex gap-8">
           <Button
-            label="Cancelar"
+            label="Limpar"
             severity="primary"
-            variant="outlined"
-            class="bg-transparent! border border-accent! text-accent! px-10 h-11 rounded"
-            @click="router.push('/')"
+            class="bg-neutral-400! text-neutral-50 px-10 h-11 rounded"
+            type="reset"
           />
-          <div class="flex gap-8">
-            <Button
-              label="Limpar"
-              severity="primary"
-              class="bg-neutral-400! text-neutral-50 px-10 h-11 rounded"
-              @click="resetForm()"
-            />
-            <Button
-              label="Salvar"
-              severity="primary"
-              class="bg-accent! px-10 h-11 rounded"
-            />
-          </div>
+          <Button
+            label="Salvar"
+            severity="primary"
+            class="bg-accent! px-10 h-11 rounded"
+            type="submit"
+          />
         </div>
-      </Form>
-    </Fieldset>
+      </div>
+    </Form>
   </section>
 </template>
 
@@ -285,5 +509,9 @@ onMounted(() => {
   height: 1px;
   margin-bottom: 22px;
   width: 100%;
+}
+
+:deep(input.p-component) {
+  padding: 0.5rem;
 }
 </style>
