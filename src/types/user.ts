@@ -3,7 +3,7 @@ export type User = {
   name: string;
   birthdate: string;
   age: number;
-  gender: "M" | "F";
+  gender: string;
   role: string;
   zipcode: string;
   street: string;
