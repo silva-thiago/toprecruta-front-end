@@ -2,9 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-import Header from "@/components/Header.vue";
-import Footer from "@/components/Footer.vue";
-
 import Button from "primevue/button";
 
 import { getUsers } from "@/services/userService";
@@ -28,7 +25,6 @@ const goToEditUser = (id: string) => {
 };
 
 const handleDeleteUser = (id: string) => {
-  // abrir modal de confirmação
   const confirmed = confirm(
     `Tem certeza que deseja excluir ${users.value.find((user) => user.id === id)?.name}`,
   );
@@ -45,47 +41,37 @@ onMounted(() => {
 </script>
 
 <template>
-  <Header />
-  <main class="main">
-    <section>
-      <div class="flex">
-        <h1>Usuários</h1>
+  <section class="container min-h-svh py-8">
+    <div class="mb-8 border-b border-border-strong flex justify-between pb-4">
+      <h1 class="text-2xl font-bold text-text-h">Usuários</h1>
+      <Button
+        @click="goToCreateUser"
+        label="Adicionar novo usuário"
+        severity="primary"
+        class="rounded sm:px-2.5 px-10 h-11 text-neutral-50"
+      />
+    </div>
+
+    <ul v-if="users.length > 0" class="users-list">
+      <li v-for="user in users" :key="user.id">
+        <p>{{ user.name }}</p>
+        <span>{{ user.age }}</span>
+        <span>{{ user.role }}</span>
         <Button
-          @click="goToCreateUser"
-          label="Adicionar novo usuário"
+          @click="goToEditUser(user.id)"
+          icon="pi pi-pencil"
+          label="Editar"
           severity="primary"
         />
-      </div>
+        <Button
+          @click="handleDeleteUser(user.id)"
+          icon="pi pi-trash"
+          label="Excluir"
+          severity="danger"
+        />
+      </li>
+    </ul>
 
-      <ul v-if="users.length > 0" class="users-list">
-        <li v-for="user in users" :key="user.id">
-          <p>{{ user.name }}</p>
-          <span>{{ user.age }}</span>
-          <span>{{ user.role }}</span>
-          <Button
-            @click="goToEditUser(user.id)"
-            icon="pi pi-pencil"
-            label="Editar"
-            severity="primary"
-          />
-          <Button
-            @click="handleDeleteUser(user.id)"
-            icon="pi pi-trash"
-            label="Excluir"
-            severity="danger"
-          />
-        </li>
-      </ul>
-
-      <p v-else>Nenhum usuário cadastrado ainda.</p>
-    </section>
-  </main>
-  <Footer />
+    <p v-else>Nenhum usuário cadastrado ainda.</p>
+  </section>
 </template>
-
-<style scoped>
-.main {
-  display: grid;
-  place-items: center;
-}
-</style>
