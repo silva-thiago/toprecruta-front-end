@@ -59,6 +59,5 @@ export const deleteUser = (id: string): void => {
     saveUser(filteredUsers);
   } catch (error) {
     console.error("Erro ao tentar deletar o usuário:", error);
-    return undefined;
   }
 };

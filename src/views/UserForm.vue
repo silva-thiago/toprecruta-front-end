@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import type { FormInstance } from "@primevue/forms";
 
 import Form from "@primevue/forms/form";
 import { FormField } from "@primevue/forms";
-import type { FormInstance } from "@primevue/forms";
 import Fieldset from "primevue/fieldset";
 import InputText from "primevue/inputtext";
-import DatePicker from "primevue/datepicker";
 import Select from "primevue/select";
 import RadioButton from "primevue/radiobutton";
 import RadioButtonGroup from "primevue/radiobuttongroup";
@@ -15,6 +14,10 @@ import Button from "primevue/button";
 import Message from "primevue/message";
 
 import { createUser, getUserById, updateUser } from "@/services/userService";
+import {
+  fetchAddressByZipcode,
+  sanitizeZipcode,
+} from "@/services/viaCepService";
 import type { User } from "@/types/user";
 
 const route = useRoute();
@@ -22,6 +25,7 @@ const router = useRouter();
 
 const isEditMode = computed(() => route.name === "user-edit");
 
+const formKey = ref(0);
 const existingCreatedAt = ref(0);
 
 const roles = [
@@ -31,9 +35,12 @@ const roles = [
   { label: "UX/UI Designer", value: "UX/UI Designer" },
 ];
 
+// Bug 2 fix: controlled string for the masked date input (DD/MM/AAAA)
+const birthdateInput = ref("");
+
 const initialValues = ref({
   name: "",
-  birthdate: null as Date | null,
+  birthdate: "",
   gender: "",
   role: "",
   zipcode: "",
@@ -42,6 +49,20 @@ const initialValues = ref({
   city: "",
   state: "",
 });
+
+const onBirthdateInput = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let digits = input.value.replace(/\D/g, "").slice(0, 8);
+
+  if (digits.length > 4) {
+    digits = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  } else if (digits.length > 2) {
+    digits = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+
+  birthdateInput.value = digits;
+  formRef.value?.setFieldValue("birthdate", digits);
+};
 
 const resolver = ({ values }: { values: Record<string, any> }) => {
   const errors: Record<string, { message: string }[]> = {};
@@ -61,15 +82,31 @@ const resolver = ({ values }: { values: Record<string, any> }) => {
   requiredFields.forEach((field) => {
     const value = values[field];
 
-    if (
-      value === null ||
-      value === undefined ||
-      value === "" ||
-      (value instanceof Date && Number.isNaN(value.getTime()))
-    ) {
+    if (value === null || value === undefined || value === "") {
       errors[field] = [{ message: "Campo obrigatório." }];
     }
   });
+
+  if (values.birthdate) {
+    const localDatePattern = String(values.birthdate).match(
+      /^(\d{2})\/(\d{2})\/(\d{4})$/,
+    );
+    if (!localDatePattern) {
+      errors.birthdate = [
+        { message: "Data inválida. Use o formato DD/MM/AAAA." },
+      ];
+    } else {
+      const [, day, month, year] = localDatePattern.map(Number);
+      const date = new Date(year, month - 1, day);
+      if (
+        date.getFullYear() !== year ||
+        date.getMonth() + 1 !== month ||
+        date.getDate() !== day
+      ) {
+        errors.birthdate = [{ message: "Data inválida." }];
+      }
+    }
+  }
 
   if (values.name && values.name.length > 100) {
     errors.name = [{ message: "Nome deve ter no máximo 100 caracteres." }];
@@ -83,32 +120,16 @@ const resolver = ({ values }: { values: Record<string, any> }) => {
   return { values, errors };
 };
 
-const sanitizeZipcode = (value: string): string => value.replace(/\D/g, "");
-
-const fetchAddressByZipcode = async (zipcode: string) => {
-  const zipCode = sanitizeZipcode(zipcode);
-
-  if (!/^\d{8}$/.test(zipCode)) {
-    throw new Error("Formato de CEP inválido.");
-  }
-
-  const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
-  const data = await response.json();
-
-  if (data.erro) {
-    throw new Error("CEP não encontrado.");
-  }
-
-  return data;
-};
-
 const formRef = ref<FormInstance | null>(null);
 
-const fillAddress = async () => {
-  try {
-    const form = formRef.value;
+const zipcodeError = ref("");
 
-    if (!form) return;
+const fillAddress = async () => {
+  const form = formRef.value;
+  if (!form) return;
+
+  try {
+    zipcodeError.value = "";
 
     const zipcodeValue = String(form.states.zipcode?.value ?? "");
     const data = await fetchAddressByZipcode(zipcodeValue);
@@ -117,30 +138,51 @@ const fillAddress = async () => {
     form.setFieldValue("neighborhood", data.bairro ?? "");
     form.setFieldValue("city", data.localidade ?? "");
     form.setFieldValue("state", data.uf ?? "");
+
+    await form.validate(["zipcode", "street", "neighborhood", "city", "state"]);
   } catch (error) {
-    const form = formRef.value;
-
-    if (!form) return;
-
     form.setFieldValue("street", "");
     form.setFieldValue("neighborhood", "");
     form.setFieldValue("city", "");
     form.setFieldValue("state", "");
+
+    zipcodeError.value =
+      error instanceof Error ? error.message : "Erro ao buscar CEP.";
+
+    await form.validate(["zipcode", "street", "neighborhood", "city", "state"]);
   }
 };
 
-const calculateAge = (date: Date | string): number => {
-  const birthdate = new Date(date);
-  if (Number.isNaN(birthdate.getTime())) return 0;
+const formatBirthdateToISO = (value: unknown): string => {
+  if (!value) return "";
+
+  const trimmed = String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  const localDatePattern = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (localDatePattern) {
+    const [, day, month, year] = localDatePattern;
+    return `${year}-${month}-${day}`;
+  }
+
+  return "";
+};
+
+const calculateAge = (birthdate: string): number => {
+  if (!birthdate) return 0;
+
+  const [year, month, day] = birthdate.split("-").map(Number);
+
+  if (!year || !month || !day) return 0;
 
   const today = new Date();
-  let age = today.getFullYear() - birthdate.getFullYear();
-  const monthDifference = today.getMonth() - birthdate.getMonth();
+  let age = today.getFullYear() - year;
 
-  if (
-    monthDifference < 0 ||
-    (monthDifference === 0 && today.getDate() < birthdate.getDate())
-  ) {
+  const currentMonth = today.getMonth() + 1;
+  const currentDay = today.getDate();
+
+  if (currentMonth < month || (currentMonth === month && currentDay < day)) {
     age--;
   }
 
@@ -156,16 +198,13 @@ const onSubmit = ({
 }) => {
   if (!valid) return;
 
-  const birthdate =
-    values.birthdate instanceof Date
-      ? values.birthdate.toISOString().split("T")[0]
-      : String(values.birthdate ?? "");
+  const normalizedBirthdate = formatBirthdateToISO(values.birthdate);
 
   const user: User = {
     id: isEditMode.value ? String(route.params.id) : Date.now().toString(),
     name: String(values.name ?? "").trim(),
-    birthdate,
-    age: calculateAge(values.birthdate),
+    birthdate: normalizedBirthdate,
+    age: calculateAge(normalizedBirthdate),
     gender: String(values.gender ?? ""),
     role: String(values.role ?? ""),
     zipcode: sanitizeZipcode(String(values.zipcode ?? "")),
@@ -197,9 +236,20 @@ onMounted(() => {
 
   existingCreatedAt.value = user.createdAt;
 
+  let birthdateForInput = "";
+
+  if (user.birthdate) {
+    const parts = user.birthdate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (parts) {
+      birthdateForInput = `${parts[3]}/${parts[2]}/${parts[1]}`;
+    }
+  }
+  birthdateInput.value = birthdateForInput;
+
   initialValues.value = {
     name: user.name,
-    birthdate: user.birthdate ? new Date(user.birthdate) : null,
+    birthdate: birthdateForInput,
     gender: user.gender,
     role: user.role,
     zipcode: user.zipcode,
@@ -208,6 +258,8 @@ onMounted(() => {
     city: user.city,
     state: user.state,
   };
+
+  formKey.value++;
 });
 </script>
 
@@ -222,6 +274,7 @@ onMounted(() => {
     <Form
       ref="formRef"
       v-slot="$form"
+      :key="formKey"
       :initialValues="initialValues"
       :resolver="resolver"
       @submit="onSubmit"
@@ -301,13 +354,15 @@ onMounted(() => {
             name="birthdate"
           >
             <label for="birthdate">Data de Nascimento</label>
-            <DatePicker
+            <InputText
               fluid
               class="w-full h-12 rounded"
-              dateformat="dd/mm/yyyy"
               id="birthdate"
-              name="birthdate"
+              inputmode="numeric"
+              maxlength="10"
               placeholder="DD/MM/AAAA"
+              :value="birthdateInput"
+              @input="onBirthdateInput"
             />
             <Message
               v-if="$field?.invalid"
@@ -477,12 +532,12 @@ onMounted(() => {
 
       <div class="flex justify-between">
         <Button
+          @click="router.push('/')"
           label="Cancelar"
           severity="primary"
           variant="outlined"
           class="bg-transparent! border border-accent! text-accent! px-10 h-11 rounded"
           type="button"
-          @click="router.push('/')"
         />
         <div class="flex gap-8">
           <Button
