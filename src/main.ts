@@ -2,6 +2,7 @@ import { createApp } from "vue";
 
 import App from "@/App.vue";
 import router from "@/router";
+import i18n from "@/i18n";
 
 import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
@@ -11,6 +12,7 @@ import "@/style.css";
 
 createApp(App)
   .use(router)
+  .use(i18n)
   .use(PrimeVue, {
     ripple: true,
     inputVariant: "filled",
