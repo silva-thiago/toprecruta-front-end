@@ -68,7 +68,7 @@ const handleLogin = () => {
 </template>
 
 <style scoped>
-.p-card {
-  box-shadow: unset;
+:deep(.p-card) {
+  box-shadow: none;
 }
 </style>
