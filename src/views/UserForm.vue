@@ -536,7 +536,7 @@ onMounted(() => {
           label="Cancelar"
           severity="primary"
           variant="outlined"
-          class="bg-transparent! border border-accent! text-accent! px-10 h-11 rounded"
+          class="bg-transparent! border border-accent! text-accent! hover:bg-brand-muted! hover:text-surface! px-10 h-11 rounded"
           type="button"
         />
         <div class="flex gap-8">
