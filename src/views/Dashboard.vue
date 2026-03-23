@@ -76,6 +76,14 @@ const confirmDeleteUser = () => {
   closeDeleteDialog();
 };
 
+const formatZipcode = (zipcode: string) => {
+  if (!zipcode) return "";
+
+  const cleanedZipcode = zipcode.replace(/\D/g, "");
+
+  return cleanedZipcode.replace(/(\d{5})(\d{3})/, "$1-$2");
+};
+
 const formatCreatedAt = (timestamp: number) => {
   return new Date(timestamp).toLocaleDateString("pt-BR");
 };
@@ -198,7 +206,7 @@ onMounted(() => {
               {{ user.street }}, {{ user.neighborhood }}, {{ user.city }}/{{
                 user.state
               }}<br />
-              CEP: {{ user.zipcode }}
+              CEP: {{ formatZipcode(user.zipcode) }}
             </p>
 
             <p>
@@ -208,7 +216,7 @@ onMounted(() => {
             <Button
               @click="goToEditUser(user.id)"
               aria-label="Editar"
-              icon="pi pi-pencil"
+              icon="pi pi-pen-to-square"
               severity="text"
               rounded
               :pt="{
