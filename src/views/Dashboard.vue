@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import Dialog from "primevue/dialog";
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
 import Button from "primevue/button";
+import Paginator from "primevue/paginator";
 
 import maleAvatar from "@/assets/avatar-male.png";
 import femaleAvatar from "@/assets/avatar-female.png";
@@ -19,9 +20,34 @@ const users = ref<User[]>([]);
 const showDeleteDialog = ref(false);
 const selectedUser = ref<User | null>(null);
 
+const first = ref(0);
+const rows = ref(5);
+
+const totalRecords = computed(() => users.value.length);
+
+const paginatedUsers = computed(() => {
+  return users.value.slice(first.value, first.value + rows.value);
+});
+
 const loadUsers = () => {
   const data = getUsers();
   users.value = [...data].sort((a, b) => b.createdAt - a.createdAt);
+
+  if (first.value >= users.value.length && users.value.length > 0) {
+    first.value = Math.max(
+      0,
+      Math.floor((users.value.length - 1) / rows.value) * rows.value,
+    );
+  }
+
+  if (!users.value.length) {
+    first.value = 0;
+  }
+};
+
+const onPageChange = (event: { first: number; rows: number }) => {
+  first.value = event.first;
+  rows.value = event.rows;
 };
 
 const goToCreateUser = () => {
@@ -46,10 +72,7 @@ const confirmDeleteUser = () => {
   if (!selectedUser.value) return;
 
   deleteUser(selectedUser.value.id);
-  users.value = users.value.filter(
-    (user) => user.id !== selectedUser.value?.id,
-  );
-
+  loadUsers();
   closeDeleteDialog();
 };
 
@@ -128,7 +151,7 @@ onMounted(() => {
       </template>
     </Dialog>
 
-    <div class="mb-8 border-b border-border-strong flex justify-between pb-4">
+    <div class="border-b border-border-strong flex justify-between mb-4 pb-6">
       <h1 class="text-2xl font-bold text-text-h">Usuários</h1>
       <Button
         @click="goToCreateUser"
@@ -138,31 +161,46 @@ onMounted(() => {
       />
     </div>
 
+    <div v-if="users.length" class="hidden md:grid user-row-grid px-5 mb-6">
+      <span />
+      <span class="col-label">Nome</span>
+      <span class="col-label">Idade</span>
+      <span class="col-label">Função</span>
+      <span class="col-label">Endereço</span>
+      <span class="col-label">Adicionado em:</span>
+      <span />
+    </div>
+
     <div v-if="users.length" class="flex flex-col gap-4">
       <Card
-        v-for="user in users"
+        v-for="user in paginatedUsers"
         :key="user.id"
-        class="flex flex-col bg-surface-soft p-10 rounded-2xl shadow-sm gap-12"
+        class="bg-surface-soft p-10 rounded-2xl shadow-sm"
       >
         <template #content>
-          <div class="flex items-center justify-between">
+          <div class="grid items-center gap-x-4 user-row-grid">
             <Avatar
-              :image="getAvatarByGender(user.gender)"
               size="xlarge"
               shape="circle"
+              :image="getAvatarByGender(user.gender)"
+              :pt="{ root: { class: 'size-12 rounded-full' } }"
             />
-            <h2>{{ user.name }}</h2>
 
-            <div class="flex items-center justify-between gap-4">
-              <p>{{ user.age }} anos</p>
-              <p>{{ user.role }}</p>
-              <p>
-                {{ user.street }}, {{ user.neighborhood }}, {{ user.city }}/{{
-                  user.state
-                }}
-              </p>
-              <p>CEP: {{ user.zipcode }}</p>
-            </div>
+            <h2 class="font-bold truncate">
+              {{ user.name }}
+            </h2>
+
+            <p>{{ user.age }} anos</p>
+
+            <p>{{ user.role }}</p>
+
+            <p>
+              {{ user.street }}, {{ user.neighborhood }}, {{ user.city }}/{{
+                user.state
+              }}<br />
+              CEP: {{ user.zipcode }}
+            </p>
+
             <p>
               {{ formatCreatedAt(user.createdAt) }}
             </p>
@@ -170,22 +208,51 @@ onMounted(() => {
             <Button
               @click="goToEditUser(user.id)"
               aria-label="Editar"
-              class="text-accent"
               icon="pi pi-pencil"
               severity="text"
               rounded
+              :pt="{
+                root: {
+                  class:
+                    'text-accent hover:bg-accent/10 transition-colors rounded-full',
+                },
+              }"
             />
+
             <Button
               @click="openDeleteDialog(user)"
               aria-label="Excluir"
-              class="text-accent"
               icon="pi pi-trash"
               severity="text"
               rounded
+              :pt="{
+                root: {
+                  class:
+                    'text-accent hover:bg-danger/10 hover:text-danger transition-colors rounded-full',
+                },
+              }"
             />
           </div>
         </template>
       </Card>
+
+      <Paginator
+        @page="onPageChange"
+        v-if="users.length > 5"
+        :first="first"
+        :rows="rows"
+        :totalRecords="totalRecords"
+        :rowsPerPageOptions="[5, 10, 20]"
+        :template="{
+          '640px': 'PrevPageLink CurrentPageReport NextPageLink',
+          '960px':
+            'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink',
+          default:
+            'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown',
+        }"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+        class="mt-4 rounded-2xl border border-surface-200 bg-white px-4 py-3"
+      />
     </div>
 
     <p v-else class="mb-4">Nenhum usuário cadastrado ainda.</p>
@@ -195,5 +262,27 @@ onMounted(() => {
 <style scoped>
 :deep(.p-card) {
   padding: 2rem;
+}
+
+.user-row-grid {
+  grid-template-columns:
+    3.25rem /* 1 – avatar        */
+    minmax(7rem, 1fr) /* 2 – nome          */
+    5.5rem /* 3 – idade         */
+    minmax(8rem, 9rem) /* 4 – função        */
+    minmax(12rem, 2fr) /* 5 – endereço      */
+    6.5rem /* 6 – data          */
+    2.5rem /* 7 – ações         */
+    2.5rem;
+  column-gap: 1rem;
+}
+
+/* Rótulos do cabeçalho da lista */
+.col-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.025em;
+  text-transform: none;
 }
 </style>
