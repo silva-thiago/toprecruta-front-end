@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+:root {
+  /* --- Tokens da Paleta de Cores (Figma) --- */
+  --brand-dark: oklch(17.12% 0.0739 260.99); /* #000C2F */
+  --brand-muted: oklch(53.28% 0.0689 225.56); /* #3C758B */
+  --accent: oklch(59.78% 0.1256 234.77); /* #048ABF */
+  --danger: oklch(44.09% 0.1725 28.23); /* #9C0E0E */
+
+  /* --- Tokens Neutros --- */
+  --neutral-900: oklch(23.5% 0 0); /* #1E1E1E */
+  --neutral-600: oklch(53.13% 0 0); /* #6C6C6C */
+  --neutral-400: oklch(77.31% 0 0); /* #B5B5B5 */
+  --neutral-100: oklch(97.57% 0.0017 247.84); /* #F6F7F8 */
+
+  /* --- Tokens Semânticos --- */
+  --bg: var(--neutral-100);
+  --surface: oklch(100% 0 0);
+  --surface-soft: oklch(95.2% 0.0016 247.84);
+
+  --text: var(--neutral-600);
+  --text-h: var(--brand-dark);
+  --text-muted: var(--neutral-400);
+
+  --border: oklch(88% 0 0);
+  --border-strong: var(--neutral-400);
+
+  /* Sombras */
+  --shadow-card: 0 10px 40px -10px rgba(0, 12, 47, 0.08);
+}
+
+/* --- Tema Dark --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(23.5% 0 0);
+    --surface: oklch(27% 0 0);
+    --surface-soft: oklch(33% 0 0);
+
+    --text: oklch(82% 0 0);
+    --text-h: oklch(97.57% 0.0017 247.84);
+    --text-muted: oklch(70% 0 0);
+
+    --border: oklch(38% 0 0);
+    --border-strong: oklch(53.13% 0 0);
+
+    --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@theme {
+  /* Configuração das Cores para o Tailwind */
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-muted: var(--brand-muted);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+
+  --color-text: var(--text);
+  --color-text-h: var(--text-h);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  /* Tipografia e Outros */
+  --font-sans: "Montserrat", system-ui, sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+}
+
+@layer components {
+  /* Alvo: O placeholder e o container da lista do Select */
+  .p-placeholder {
+    color: var(--text-muted);
+  }
+
+  .p-select-list {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+/* --- Base Global --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* --- Ajuste de Títulos --- */
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text-h);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 0;
+}
+
+/* --- Estilização PrimeVue (Light/Dark) --- */
+.p-inputtext {
+  @apply bg-surface border-border text-text placeholder:text-text-muted rounded-lg transition-all focus:border-accent focus:ring-1 focus:ring-accent/20;
+}
+
+.p-button.p-button-primary {
+  @apply bg-accent border-accent text-white hover:brightness-110 active:scale-95;
+}
+
+.p-radiobutton-box.p-highlight {
+  @apply bg-accent border-accent;
+}
+
+/* --- Layout Principal --- */
+#app {
+  display: grid;
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 100%;
+  min-height: 100svh;
+  text-align: left;
+  width: 100%;
+}
