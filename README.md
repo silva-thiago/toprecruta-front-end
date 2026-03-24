@@ -1,90 +1,159 @@
-# **Avaliação Front-end**
-Olá! Muito obrigado por participar da avaliação técnica para integrar a equipe de desenvolvimento da **Top Solutions**.
+# TopRecruta — Sistema de Cadastro de Usuários
 
-## **Objetivo**
-O desafio consiste em desenvolver um sistema de cadastro de usuários, onde será possível realizar operações de **Create**, **Read**, **Update** e **Delete** (CRUD). O sistema deve utilizar a API do **ViaCep** para preenchimento automático do endereço com base no CEP informado e implementar uma funcionalidade de autenticação para acesso ao sistema.
+Aplicação front-end desenvolvida como parte do desafio técnico da **Top Solutions**, implementando um sistema completo de cadastro de usuários com autenticação e operações de CRUD.
 
-Você receberá um protótipo no **Figma** com o layout das telas que devem ser implementadas.
+---
 
-[`Acesse o protótipo do Figma aqui`](https://www.figma.com/design/L7OquXSMhHA6jGsTqW72SV/Teste-pratico-Top-Solutions)
+## Tecnologias utilizadas
 
-[`Acesse o site do ViaCep aqui`](https://viacep.com.br/)
+- [Vue.js 3](https://vuejs.org/) com Composition API
+- [Vue Router 4](https://router.vuejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/)
+- [PrimeVue 4](https://primevue.org/) + PrimeIcons
+- [Tailwind CSS 4](https://tailwindcss.com/)
+- [ViaCEP API](https://viacep.com.br/)
+- LocalStorage + JWT (simulado para front-end) (persistência de dados e autenticação)
 
-## **Requisitos Funcionais**
-### 1. **Tela de Login**
-- Implementar uma tela de login onde o usuário precisará se autenticar para acessar o sistema de cadastro.
-- **Autenticação:** O candidato pode implementar a autenticação da forma que preferir, utilizando o `Storage` ou qualquer outra solução para controle de autenticação no front-end.
-- Apenas usuários autenticados poderão acessar as funcionalidades do sistema **(CRUD)**.
+---
 
-### 2. **Exibição de Usuários**
-- Tela que exibe uma lista de usuários cadastrados com as seguintes funcionalidades, conforme mostrado no protótipo no **Figma**:
-  - **Editar Usuário:** Cada usuário exibido terá um botão de "Editar". Ao clicar, o usuário será redirecionado para a tela de cadastro com os campos já preenchidos, permitindo a edição.
-  - **Deletar Usuário:** Cada usuário terá um botão de "Excluir". Ao clicar, uma confirmação deve ser exibida, e após a confirmação, o cartão do usuário excluído deve sumir imediatamente.
+## Funcionalidades implementadas
 
-### 3. **Cadastro de Usuário**
-- Implementar uma tela com um formulário contendo os campos conforme exibidos no protótipo.
-- O participante deve integrar a API do [**ViaCep**](https://viacep.com.br/) para preencher automaticamente os campos de endereço (Rua, Bairro, Cidade, Estado) ao informar um CEP válido.
-- **Validação:** Todos os campos são obrigatórios e devem ter validações adequadas, como:
-  - **Rua, Bairro, Cidade, Estado:** Devem ser preenchidos automaticamente pela API.
-  - **CEP:** Deve ser validado usando a API.
-  - **Nome:** Precisa ter um limite de caracteres.
-  - **Função:** Será um Dropdown (Select Option) com opções predeterminadas:
-    - Dev Back-end
-    - Dev Front-end
-    - Dev Full Stack
-    - UX/UI Designer
+### Autenticação
+- Login com **email** e **senha** (bônus do desafio)
+- Token JWT simulado gerado e armazenado no `localStorage`, com verificação de assinatura e expiração (TTL de 25 minutos)
+- Proteção de rotas via `beforeEach` no Vue Router — acesso direto por URL sem autenticação redireciona para `/login`
+- Logout invalida o token e redireciona para a tela de login
 
-## **Requisitos Técnicos**
-- O projeto deve ser feito em `Vue.js 3` ou `Angular v16 ou superior`.
-- **API:** O sistema deve consumir a API do ViaCep para buscar o endereço completo a partir do CEP informado.
-- **LocalStorage:** Os dados cadastrados do usuário devem ser armazenados no `localStorage`.
-- **Responsividade:** A aplicação deve ser responsiva e funcionar corretamente em dispositivos móveis e desktop.
-- **Modal de Confirmação:** A exclusão de usuários deve ser confirmada via modal.
-- **Autenticação:** O usuário precisa se autenticar para acessar as funcionalidades de **CRUD**. A implementação da autenticação pode ser flexível, desde que funcional (Storage, gerenciamento de estado ou outra solução).
+### CRUD de Usuários
+- **Criar** usuário com formulário validado
+- **Listar** usuários ordenados do mais recente ao mais antigo
+- **Editar** usuário com formulário pré-preenchido
+- **Excluir** usuário com modal de confirmação — o card some imediatamente sem reload
 
-### **Vue.js**
-Se escolher Vue.js para este desafio:
-- Use a versão **3** do Vue.js.
-- Utilize a [`Composition API`](https://vuejs.org/guide/introduction.html#composition-api) para a codificação.
+### Integração com ViaCEP
+- Preenchimento automático de Rua, Bairro, Cidade e Estado ao informar o CEP
+- Tratamento de CEP inválido ou não encontrado com mensagem de erro
 
-### **Angular**
-Se escolher Angular:
-- Use a versão **16 ou superior** do Angular.
+### Validações do formulário
+- Todos os campos são obrigatórios
+- Nome: limite de 100 caracteres
+- Data de nascimento: máscara `DD/MM/AAAA` com validação de data real
+- CEP: validado via ViaCEP API
+- Função: dropdown com opções pré-definidas
+- CPF no login: validação dos dois dígitos verificadores
+- Campos inválidos destacados em vermelho com mensagens de erro
 
-## **Funcionalidades Gerais**
-- Não deve ser possível acessar as telas de cadastro ([Tela 2](#2-exibição-de-usuários) e [Tela 3](#3-cadastro-de-usuário)) sem estar autenticado.
-- Ao tentar acessar diretamente pela URL sem autenticação, o usuário deve ser redirecionado para a tela de Login.
-- O botão de logout deve redirecionar para a tela de login, exigindo nova autenticação.
-- O layout deverá seguir o protótipo do **Figma**.
-- A **Idade** do usuário deve ser calculada com base na **data de nascimento**.
-- A **imagem** do usuário deve refletir o **Gênero** informado.
-- Não deve ser possível salvar o cadastro sem preencher todos os campos obrigatórios.
-- Mensagens de erro devem ser exibidas quando houver tentativa de cadastro com campos incompletos ou inválidos.
-- Ao adicionar um novo usuário, o sistema deve redirecionar para a [Tela 2](#2-exibição-de-usuários) (com o novo usuário já exibido).
-- A lista de usuários deve ser exibida em ordem de cadastro, do mais recente ao mais antigo.
+### Regras de negócio
+- Idade calculada automaticamente a partir da data de nascimento
+- Avatar do usuário definido pelo gênero informado (masculino / feminino)
+- Endereços preenchidos automaticamente pelo CEP são somente leitura
 
-## **Bônus**
-Essa etapa é opcional e serve como diferencial. **Não** é obrigatório realizar os passos abaixo:
-- Cada usuário possui **CPF** e **Senha** para autenticação no sistema.
-- Persistência dos dados em um backend.
-- Tela inicial com dados estatísticos do sistema (quantidade de usuários, último usuário cadastrado, etc.).
-- Filtros para localizar usuários de forma eficiente.
-- Barra de rolagem ou paginação com exibição do rodapé constante.
-- Criação de transições suaves entre telas.
-- Utilização do [`PrimeNG (Angular)`](https://primeng.org/) ou [`PrimeVue (Vue)`](https://primevue.org/).
-- Filtro no campo de funções (Dropdown).
-- Destacar campos não preenchidos ou inválidos em vermelho, com mensagens de erro.
+### Responsividade
+- Layout adaptado para mobile e desktop
+- Cards da listagem colapsam para `flex-col` em telas pequenas com rótulos inline e exibe os dados em `grid` em telas maiores que 1024px (64rem)
 
-## **Instruções de Entrega**
-- Faça um Fork: Crie um fork deste repositório para a sua conta pessoal no GitHub.
-- Desenvolva: Implemente a solução utilizando Vue.js 3 ou Angular, realizando os commits diretamente no seu fork.
-- Documente: Ao finalizar, atualize o arquivo README.md do seu repositório. Ele deve conter as instruções detalhadas de como instalar, rodar e testar a sua aplicação localmente.
-- Envie: Disponibilize o link do seu repositório finalizado para a nossa equipe avaliar.
+---
 
-## **Instruções Finais**
-- O projeto deve ser feito em `Vue.js 3` ou `Angular`, conforme indicado no enunciado.
-- Utilize o repositório disponibilizado pela empresa no Github.
-- Crie um Fork desse repositório
-- **Prazo:** O prazo para entrega do desafio é de 7 dias após o recebimento deste enunciado.
+## Pré-requisitos
 
-Boa sorte e bom desenvolvimento!
+- [Node.js](https://nodejs.org/) v18 ou superior
+- Gerenciador de pacotes: `npm`, `yarn`, `pnpm` ou `bun` (o arquivo `.lock` não está versionado — use o de sua preferência)
+
+---
+
+## Como rodar localmente
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/seu-usuario/toprecruta-front-end.git
+cd toprecruta-front-end
+
+# 2. Instale as dependências (use o gerenciador de sua preferência)
+npm install
+# ou
+yarn install
+# ou
+pnpm install
+# ou
+bun install
+
+# 3. Inicie o servidor de desenvolvimento
+npm run dev
+# ou
+yarn run dev
+# ou
+pnpm run dev
+# ou
+bun run dev
+
+# 4. Acesse no navegador
+http://localhost:5173
+```
+
+### Build para produção
+
+```bash
+npm run build
+# ou
+yarn run build
+# ou
+pnpm run build
+# ou
+bun run build
+```
+
+O output será gerado na pasta `dist/`.
+
+---
+
+## Como testar
+
+### Credenciais de acesso
+
+| Campo | Valor                   |
+|-------|-------------------------|
+| email | admin@topsolutions.com  |
+| Senha | Admin@1234              |
+
+### Fluxo completo
+
+1. Acesse `http://localhost:5173` — você será redirecionado para `/login`
+2. Tente acessar `/` diretamente sem autenticar — confirme o redirecionamento para `/login`
+3. Faça login com as credenciais acima
+4. Cadastre um novo usuário preenchendo todos os campos; informe um CEP válido e veja o endereço ser preenchido automaticamente
+5. Confirme que o novo usuário aparece no topo da lista em `/`
+6. Edite o usuário clicando no ícone de lápis — os campos devem estar pré-preenchidos, incluindo a data de nascimento
+7. Exclua um usuário clicando no ícone de lixeira, confirme o modal e veja o card ser removido imediatamente
+8. Clique em **Sair** no cabeçalho — confirme o redirecionamento para `/login` e que o acesso às rotas protegidas foi bloqueado
+9. Recarregue a página durante uma sessão ativa — a sessão deve ser mantida (token ainda válido)
+
+---
+
+## Estrutura do projeto
+
+```
+src/
+├── assets/           # Avatares e imagens estáticas
+├── components/       # Header e Footer
+├── router/           # Configuração de rotas e guards
+├── services/         # authService, userService, viaCepService
+├── types/            # Tipagens TypeScript (User, ViaCepAddress)
+└── views/            # Login, Dashboard, UserForm
+```
+
+---
+
+## Decisões técnicas relevantes
+
+**JWT simulado sem backend**
+O desafio é 100% front-end. O `authService` gera um token no formato `header.payload.signature` em base64url com assinatura XOR determinística, o que impede adulteração manual do token no `localStorage`. Em produção, a assinatura seria feita por um backend com HMAC-SHA256 real.
+
+**Máscara de data sem dependências externas**
+O `DatePicker` do PrimeVue não insere barras ao digitar. A solução adotada foi um `InputText` com função de máscara reativa (`DD/MM/AAAA`), convertida para ISO (`YYYY-MM-DD`) apenas no momento do submit.
+
+**Parsing de data sem `new Date(isoString)`**
+`new Date("2000-01-15")` interpreta a string como UTC midnight, causando deslocamento de fuso horário no navegador. A conversão é feita manualmente via regex para evitar o problema.
+
+**Grid de listagem com CSS nativo**
+O layout dos cards usa `grid-template-columns` com `minmax` e larguras fixas em vez de `grid-cols-12`, garantindo alinhamento preciso entre o cabeçalho de colunas e os valores dos cards independente do conteúdo.
