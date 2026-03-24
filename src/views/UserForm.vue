@@ -273,26 +273,33 @@ onMounted(() => {
 
     <Form
       ref="formRef"
+      @submit="onSubmit"
       v-slot="$form"
       :key="formKey"
       :initialValues="initialValues"
       :resolver="resolver"
-      @submit="onSubmit"
-      class="flex flex-col max-w-4xl mx-auto gap-6"
+      :pt="{ root: { class: 'flex flex-col max-w-4xl mx-auto gap-6' } }"
     >
       <Fieldset
-        class="flex flex-col bg-surface-soft p-10 rounded-2xl shadow-sm gap-12"
+        :pt="{
+          root: {
+            class: 'bg-surface-soft p-10 rounded-2xl shadow-sm gap-12',
+          },
+          content: { class: 'flex flex-col gap-4' },
+        }"
       >
-        <div class="flex flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6">
           <FormField
             v-slot="$field"
-            class="col-span-8 flex flex-auto flex-col gap-2"
+            :pt="{
+              root: { class: 'col-span-8 flex flex-auto flex-col gap-2' },
+            }"
             name="name"
           >
             <label for="name">Nome</label>
             <InputText
+              :pt="{ root: { class: 'w-full h-12 rounded' } }"
               fluid
-              class="w-full h-12 rounded"
               id="name"
               placeholder="Digite o nome do usário"
               type="text"
@@ -309,19 +316,22 @@ onMounted(() => {
 
           <FormField
             v-slot="$field"
-            class="col-span-4 flex flex-col gap-2"
+            :pt="{
+              root: { class: 'col-span-4 flex flex-col gap-2' },
+            }"
             name="gender"
           >
-            <label>Gênero</label>
+            <label for="gender">Gênero</label>
             <RadioButtonGroup
-              class="flex items-center gap-6 h-12"
+              :pt="{ root: { class: 'flex items-center gap-6 h-12' } }"
               name="gender"
             >
               <div class="flex items-center gap-2">
                 <label for="male">Masculino</label>
                 <RadioButton
                   inputId="male"
-                  class="bg-white rounded-full"
+                  size="large"
+                  variant="outlined"
                   value="Masculino"
                   type="checkbox"
                 />
@@ -330,7 +340,8 @@ onMounted(() => {
                 <label for="female">Feminino</label>
                 <RadioButton
                   inputId="female"
-                  class="bg-white rounded-full"
+                  size="large"
+                  variant="outlined"
                   value="Feminino"
                   type="checkbox"
                 />
@@ -347,22 +358,22 @@ onMounted(() => {
           </FormField>
         </div>
 
-        <div class="flex flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6">
           <FormField
             v-slot="$field"
-            class="col-span-3 flex flex-col gap-2"
+            :pt="{ root: { class: 'col-span-3 flex flex-col gap-2' } }"
             name="birthdate"
           >
             <label for="birthdate">Data de Nascimento</label>
             <InputText
+              @input="onBirthdateInput"
+              :value="birthdateInput"
+              :pt="{ root: { class: 'w-full h-12 rounded' } }"
               fluid
-              class="w-full h-12 rounded"
               id="birthdate"
               inputmode="numeric"
               maxlength="10"
               placeholder="DD/MM/AAAA"
-              :value="birthdateInput"
-              @input="onBirthdateInput"
             />
             <Message
               v-if="$field?.invalid"
@@ -376,7 +387,9 @@ onMounted(() => {
 
           <FormField
             v-slot="$field"
-            class="col-span-9 flex flex-auto flex-col gap-2"
+            :pt="{
+              root: { class: 'col-span-9 flex flex-auto flex-col gap-2' },
+            }"
             name="role"
           >
             <label for="role">Função</label>
@@ -400,24 +413,24 @@ onMounted(() => {
           </FormField>
         </div>
 
-        <p class="text-sm font-semibold text-brand-dark col-span-12 my-4">
+        <p class="text-sm font-semibold text-brand-dark col-span-12 mt-4">
           Endereço
         </p>
 
-        <div class="flex flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6">
           <FormField
             v-slot="$field"
-            class="col-span-4 flex flex-col gap-2"
+            :pt="{ root: { class: 'col-span-4 flex flex-col gap-2' } }"
             name="zipcode"
           >
-            <label for="zipcode"> CEP </label>
+            <label for="zipcode">CEP</label>
             <InputText
-              fluid
               @blur="fillAddress"
+              :pt="{ root: { class: 'w-full h-12 rounded' } }"
+              fluid
               data-zipcode
               id="zipcode"
               placeholder="Digite o CEP"
-              class="w-full h-12 rounded"
               type="text"
             />
             <Message
@@ -432,15 +445,22 @@ onMounted(() => {
 
           <FormField
             v-slot="$field"
-            class="col-span-8 flex flex-auto flex-col gap-2"
+            :pt="{
+              root: { class: 'col-span-8 flex flex-auto flex-col gap-2' },
+            }"
             name="street"
           >
-            <label for="street"> Rua </label>
+            <label for="street">Rua</label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                },
+              }"
               fluid
               data-street
               id="street"
-              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
               readonly
               type="text"
             />
@@ -455,18 +475,27 @@ onMounted(() => {
           </FormField>
         </div>
 
-        <div class="flex flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6">
           <FormField
             v-slot="$field"
-            class="col-span-4 flex flex-col gap-2"
+            :pt="{
+              root: {
+                class: 'col-span-4 flex flex-col gap-2',
+              },
+            }"
             name="neighborhood"
           >
-            <label for="neighborhood"> Bairro </label>
+            <label for="neighborhood">Bairro</label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                },
+              }"
               fluid
               data-neighborhood
               id="neighborhood"
-              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
               readonly
               type="text"
             />
@@ -482,15 +511,24 @@ onMounted(() => {
 
           <FormField
             v-slot="$field"
-            class="col-span-6 flex flex-auto flex-col gap-2"
+            :pt="{
+              root: {
+                class: 'col-span-6 flex flex-auto flex-col gap-2',
+              },
+            }"
             name="city"
           >
-            <label for="city"> Cidade </label>
+            <label for="city">Cidade</label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                },
+              }"
               fluid
               data-city
               id="city"
-              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
               readonly
               type="text"
             />
@@ -506,15 +544,24 @@ onMounted(() => {
 
           <FormField
             v-slot="$field"
-            class="col-span-2 flex flex-col gap-2"
+            :pt="{
+              root: {
+                class: 'col-span-2 flex flex-col gap-2',
+              },
+            }"
             name="state"
           >
             <label for="state"> Estado </label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                },
+              }"
               fluid
               data-state
               id="state"
-              class="w-full h-12 rounded bg-neutral-100/95! text-neutral-600!"
               readonly
               type="text"
             />
@@ -530,7 +577,7 @@ onMounted(() => {
         </div>
       </Fieldset>
 
-      <div class="flex justify-between">
+      <div class="flex flex-col md:flex-row justify-between gap-y-4">
         <Button
           @click="router.push('/')"
           label="Cancelar"
@@ -539,7 +586,7 @@ onMounted(() => {
           class="bg-transparent! border border-accent! text-accent! hover:bg-brand-muted! hover:text-surface! px-10 h-11 rounded"
           type="button"
         />
-        <div class="flex gap-8">
+        <div class="flex flex-col md:flex-row gap-4">
           <Button
             label="Limpar"
             severity="primary"
@@ -568,5 +615,9 @@ onMounted(() => {
 
 :deep(input.p-component) {
   padding: 0.5rem;
+}
+
+:deep(.p-radiobutton-checked .p-radiobutton-box) {
+  background: var(--accent);
 }
 </style>
