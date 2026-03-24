@@ -140,7 +140,7 @@ onMounted(() => {
       </div>
 
       <template #footer>
-        <div class="flex justify-center gap-4">
+        <div class="flex flex-col lg:flex-row justify-center gap-4">
           <Button
             @click="closeDeleteDialog"
             label="Cancelar"
@@ -272,7 +272,7 @@ onMounted(() => {
             'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown',
         }"
         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-        class="mt-4 rounded-2xl border border-surface-200 bg-white px-4 py-3"
+        class="mt-4 rounded-2xl border border-surface-200 dark:bg-neutral-900! bg-neutral-50 px-4 py-3"
       />
     </div>
 

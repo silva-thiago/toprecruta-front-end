@@ -13,7 +13,7 @@ const logout = () => {
 
 <template>
   <header
-    class="h-28 bg-white dark:bg-neutral-900 border-b border-neutral-100 px-6 flex justify-center items-center"
+    class="h-28 bg-surface-soft dark:bg-neutral-900 border-b border-neutral-100 px-6 flex justify-center items-center"
   >
     <nav
       class="container flex justify-between items-center sm:gap-4 md:gap-6 lg:gap-12 max-w-6xl"
