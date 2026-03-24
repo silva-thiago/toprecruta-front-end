@@ -3,6 +3,8 @@ import LoginView from "@/views/Login.vue";
 import DashboardView from "@/views/Dashboard.vue";
 import UserFormView from "@/views/UserForm.vue";
 
+import { validateToken } from "@/services/authService";
+
 const routes = [
   { path: "/login", name: "login", component: LoginView },
   {
@@ -32,13 +34,15 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _from, next) => {
-  const isAuthenticated = localStorage.getItem("auth") === "true";
+  // Valida o token JWT — verifica assinatura e expiração
+  const isAuthenticated = validateToken();
 
-  // Usuário não autenticado → bloqueado
+  // Rota protegida sem token válido → login
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next("/login");
   }
-  // Usuário autenticado, mas tentando acessar /login → redirecionado para /
+
+  // Já autenticado tentando acessar /login → home
   if (to.name === "/login" && isAuthenticated) {
     return next("/");
   }

@@ -171,10 +171,7 @@ onMounted(() => {
       />
     </div>
 
-    <div
-      v-if="users.length"
-      class="hidden lg:grid lg:grid-cols-12 gap-4 px-8 mb-6"
-    >
+    <div v-if="users.length" class="hidden lg:grid lg:grid-cols-12 gap-4 px-8">
       <span />
       <span>Nome</span>
       <span class="col-start-3">Idade</span>

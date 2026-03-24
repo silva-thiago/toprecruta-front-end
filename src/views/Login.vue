@@ -1,16 +1,63 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { Form, FormField } from "@primevue/forms";
 import InputText from "primevue/inputtext";
 import Card from "primevue/card";
 import Button from "primevue/button";
+import Message from "primevue/message";
+
+import { login } from "@/services/authService";
 
 const router = useRouter();
 
-const handleLogin = () => {
-  localStorage.setItem("auth", "true");
-  router.push("/");
+const loginError = ref("");
+const isLoading = ref(false);
+
+const resolver = ({ values }: { values: Record<string, string> }) => {
+  const errors: Record<string, { message: string }[]> = {};
+
+  const email = (values.email ?? "").trim();
+
+  if (!email) {
+    errors.email = [{ message: "Email é obrigatório." }];
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = [{ message: "Informe um email válido." }];
+  }
+
+  const password = (values.password ?? "").trim();
+
+  if (!password) {
+    errors.password = [{ message: "Senha é obrigatória." }];
+  } else if (password.length < 6) {
+    errors.password = [{ message: "Mínimo de 6 caracteres." }];
+  }
+
+  return { values, errors };
+};
+
+const onSubmit = ({
+  valid,
+  values,
+}: {
+  valid: boolean;
+  values: Record<string, string>;
+}) => {
+  if (!valid) return;
+
+  loginError.value = "";
+  isLoading.value = true;
+
+  setTimeout(() => {
+    const result = login(values.email.trim(), values.password);
+
+    if (result.success) {
+      router.push("/");
+    } else {
+      loginError.value = result.message;
+    }
+  }, 300);
 };
 </script>
 
@@ -30,34 +77,83 @@ const handleLogin = () => {
         </p>
       </template>
       <template #content>
-        <Form @submit="handleLogin" class="flex flex-col gap-6">
-          <FormField class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-neutral-600" for="email"
-              >Email</label
-            >
+        <Form
+          @submit="onSubmit"
+          v-slot="$form"
+          :resolver="resolver"
+          :pt="{ root: { class: 'flex flex-col gap-6 mt-2' } }"
+        >
+          <FormField
+            v-slot="$field"
+            name="email"
+            :pt="{ root: { class: 'flex flex-col gap-2' } }"
+          >
+            <label class="font-medium" for="email">Email</label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all',
+                },
+              }"
               id="email"
-              class="w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
               placeholder="Digite seu email"
               type="email"
             />
-            <!-- <Message severity="error" size="small" variant="simple">{{ $form.email.error?.message }}</Message> -->
-          </FormField>
-          <FormField class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-neutral-600" for="password"
-              >Senha</label
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+              >{{ $field.error?.message }}</Message
             >
+          </FormField>
+          <FormField
+            v-slot="$field"
+            name="password"
+            :pt="{ root: { class: 'flex flex-col gap-2' } }"
+          >
+            <label class="font-medium" for="password">Senha</label>
             <InputText
+              :pt="{
+                root: {
+                  class:
+                    'w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all',
+                },
+              }"
               id="password"
-              class="w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
               placeholder="Digite seu senha"
               type="password"
             />
-            <!-- <Message severity="error" size="small" variant="simple">{{ $form.password.error?.message }}</Message> -->
+            <Message
+              v-if="$field?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+              >{{ $field.error?.message }}</Message
+            >
           </FormField>
+
+          <Message
+            v-if="loginError"
+            severity="error"
+            size="small"
+            variant="simple"
+            class="-mt-2"
+          >
+            {{ loginError }}
+          </Message>
+
           <Button
-            class="w-full h-12 mt-2 bg-accent text-white font-semibold rounded-lg text-base shadow-sm hover:bg-accent/90 focus:outline-none focus:ring-4 focus:ring-accent/30 transition-all active:scale-[0.98]"
-            label="Entrar"
+            :label="isLoading ? 'Carregando...' : 'Entrar'"
+            :loading="isLoading"
+            :disabled="isLoading"
+            :pt="{
+              root: {
+                class:
+                  'w-full h-12 mt-2 bg-accent text-white font-semibold rounded-lg text-base shadow-sm hover:bg-accent/90 focus:outline-none focus:ring-4 focus:ring-accent/30 transition-all active:scale-[0.98]',
+              },
+            }"
             severity="primary"
             type="submit"
           />
