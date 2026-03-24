@@ -14,6 +14,7 @@ const router = useRouter();
 
 const loginError = ref("");
 const isLoading = ref(false);
+const showPassword = ref(false);
 
 const resolver = ({ values }: { values: Record<string, string> }) => {
   const errors: Record<string, { message: string }[]> = {};
@@ -37,6 +38,14 @@ const resolver = ({ values }: { values: Record<string, string> }) => {
   return { values, errors };
 };
 
+const revealPassword = () => {
+  showPassword.value = true;
+};
+
+const hidePassword = () => {
+  showPassword.value = false;
+};
+
 const onSubmit = ({
   valid,
   values,
@@ -56,6 +65,7 @@ const onSubmit = ({
       router.push("/");
     } else {
       loginError.value = result.message;
+      isLoading.value = false;
     }
   }, 300);
 };
@@ -114,17 +124,35 @@ const onSubmit = ({
             :pt="{ root: { class: 'flex flex-col gap-2' } }"
           >
             <label class="font-medium" for="password">Senha</label>
-            <InputText
-              :pt="{
-                root: {
-                  class:
-                    'w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all',
-                },
-              }"
-              id="password"
-              placeholder="Digite seu senha"
-              type="password"
-            />
+            <div class="relative">
+              <InputText
+                :type="showPassword ? 'text' : 'password'"
+                :pt="{
+                  root: {
+                    class:
+                      'w-full h-12 px-4 border border-neutral-200 rounded-lg bg-white text-base text-brand-dark placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all',
+                  },
+                }"
+                id="password"
+                placeholder="Digite seu senha"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-neutral-500 hover:text-accent transition-colors cursor-pointer"
+                :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                :title="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                @mousedown.prevent="revealPassword"
+                @mouseup="hidePassword"
+                @mouseleave="hidePassword"
+                @touchstart.prevent="revealPassword"
+                @touchend="hidePassword"
+              >
+                <i
+                  class="pi text-base"
+                  :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"
+                />
+              </button>
+            </div>
             <Message
               v-if="$field?.invalid"
               severity="error"
