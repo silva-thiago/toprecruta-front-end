@@ -159,7 +159,9 @@ onMounted(() => {
       </template>
     </Dialog>
 
-    <div class="border-b border-border-strong flex justify-between mb-4 pb-6">
+    <div
+      class="flex justify-between gap-4 border-b border-border-strong mb-4 pb-6"
+    >
       <h1 class="text-2xl font-bold text-text-h">Usuários</h1>
       <Button
         @click="goToCreateUser"
@@ -169,13 +171,16 @@ onMounted(() => {
       />
     </div>
 
-    <div v-if="users.length" class="hidden md:grid user-row-grid px-5 mb-6">
+    <div
+      v-if="users.length"
+      class="hidden lg:grid lg:grid-cols-12 gap-4 px-8 mb-6"
+    >
       <span />
-      <span class="col-label">Nome</span>
-      <span class="col-label">Idade</span>
-      <span class="col-label">Função</span>
-      <span class="col-label">Endereço</span>
-      <span class="col-label">Adicionado em:</span>
+      <span>Nome</span>
+      <span class="col-start-3">Idade</span>
+      <span class="col-start-4">Função</span>
+      <span class="col-start-6">Endereço</span>
+      <span class="col-start-11 col-span-2">Adicionado em:</span>
       <span />
     </div>
 
@@ -183,36 +188,47 @@ onMounted(() => {
       <Card
         v-for="user in paginatedUsers"
         :key="user.id"
-        class="bg-surface-soft p-10 rounded-2xl shadow-sm"
+        :pt="{
+          root: { class: 'bg-surface-soft rounded-2xl shadow-sm p-0' },
+          content: {
+            class: 'flex items-center lg:grid lg:grid-cols-12 gap-4',
+          },
+        }"
       >
         <template #content>
-          <div class="grid items-center gap-x-4 user-row-grid">
+          <div class="flex justify-center">
             <Avatar
               size="xlarge"
               shape="circle"
               :image="getAvatarByGender(user.gender)"
-              :pt="{ root: { class: 'size-12 rounded-full' } }"
+              :pt="{ root: { class: 'size-20 rounded-full' } }"
             />
+          </div>
 
-            <h2 class="font-bold truncate">
+          <div
+            class="flex flex-col flex-10 justify-center lg:items-center lg:grid lg:grid-cols-10 lg:col-span-10 lg:col-start-2 gap-y-2"
+          >
+            <h2 class="font-bold">
               {{ user.name }}
             </h2>
 
-            <p>{{ user.age }} anos</p>
+            <p class="col-start-2">{{ user.age }} anos</p>
 
-            <p>{{ user.role }}</p>
+            <p class="col-start-3">{{ user.role }}</p>
 
-            <p>
+            <p class="col-start-5 col-span-5">
               {{ user.street }}, {{ user.neighborhood }}, {{ user.city }}/{{
                 user.state
               }}<br />
-              CEP: {{ formatZipcode(user.zipcode) }}
+              CEP: {{ user.zipcode }}
             </p>
 
-            <p>
+            <p class="col-start-10">
               {{ formatCreatedAt(user.createdAt) }}
             </p>
+          </div>
 
+          <div class="flex flex-col justify-center lg:flex-row lg:col-start-12">
             <Button
               @click="goToEditUser(user.id)"
               aria-label="Editar"
@@ -270,27 +286,5 @@ onMounted(() => {
 <style scoped>
 :deep(.p-card) {
   padding: 2rem;
-}
-
-.user-row-grid {
-  grid-template-columns:
-    3.25rem /* 1 – avatar        */
-    minmax(7rem, 1fr) /* 2 – nome          */
-    5.5rem /* 3 – idade         */
-    minmax(8rem, 9rem) /* 4 – função        */
-    minmax(12rem, 2fr) /* 5 – endereço      */
-    6.5rem /* 6 – data          */
-    2.5rem /* 7 – ações         */
-    2.5rem;
-  column-gap: 1rem;
-}
-
-/* Rótulos do cabeçalho da lista */
-.col-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.025em;
-  text-transform: none;
 }
 </style>
