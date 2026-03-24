@@ -400,7 +400,7 @@ onMounted(() => {
               optionValue="value"
               placeholder="Selecione..."
               id="role"
-              class="flex items-center w-full h-12 p-2 rounded bg-white"
+              class="flex items-center w-full h-12 p-2 rounded bg-white dark:bg-neutral-800"
             />
             <Message
               v-if="$field?.invalid"
@@ -455,7 +455,7 @@ onMounted(() => {
               :pt="{
                 root: {
                   class:
-                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600! dark:bg-neutral-800! dark:text-neutral-400!',
                 },
               }"
               fluid
@@ -490,7 +490,7 @@ onMounted(() => {
               :pt="{
                 root: {
                   class:
-                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600! dark:bg-neutral-800! dark:text-neutral-400!',
                 },
               }"
               fluid
@@ -523,7 +523,7 @@ onMounted(() => {
               :pt="{
                 root: {
                   class:
-                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600! dark:bg-neutral-800! dark:text-neutral-400!',
                 },
               }"
               fluid
@@ -556,7 +556,7 @@ onMounted(() => {
               :pt="{
                 root: {
                   class:
-                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600!',
+                    'w-full h-12 rounded bg-neutral-100/95! text-neutral-600! dark:bg-neutral-800! dark:text-neutral-400!',
                 },
               }"
               fluid
