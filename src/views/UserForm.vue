@@ -333,7 +333,6 @@ onMounted(() => {
                   size="large"
                   variant="outlined"
                   value="Masculino"
-                  type="checkbox"
                 />
               </div>
               <div class="flex items-center gap-2">
@@ -343,7 +342,6 @@ onMounted(() => {
                   size="large"
                   variant="outlined"
                   value="Feminino"
-                  type="checkbox"
                 />
               </div>
             </RadioButtonGroup>
@@ -394,13 +392,18 @@ onMounted(() => {
           >
             <label for="role">Função</label>
             <Select
-              fluid
               :options="roles"
+              :pt="{
+                root: { class: 'w-full' },
+                label: { class: 'flex items-center h-12 px-3' },
+                dropdown: { class: 'w-12 flex items-center justify-center' },
+              }"
+              fluid
+              name="role"
               optionLabel="label"
               optionValue="value"
+              inputId="role"
               placeholder="Selecione..."
-              id="role"
-              class="flex items-center w-full h-12 p-2 rounded bg-white dark:bg-neutral-800"
             />
             <Message
               v-if="$field?.invalid"
