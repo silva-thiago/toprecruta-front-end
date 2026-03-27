@@ -117,7 +117,7 @@ onMounted(() => {
           class: 'flex justify-end px-8 pt-7 pb-4',
         },
         closeButton: {
-          class: 'w-8 h-8 rounded-full',
+          class: 'w-8 h-8',
         },
         closeIcon: {
           class: 'text-xs',
@@ -260,6 +260,12 @@ onMounted(() => {
       <Paginator
         @page="onPageChange"
         v-if="users.length > 5"
+        :pt="{
+          root: {
+            class:
+              'mt-4 rounded-2xl border border-surface-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3',
+          },
+        }"
         :first="first"
         :rows="rows"
         :totalRecords="totalRecords"
@@ -272,7 +278,6 @@ onMounted(() => {
             'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown',
         }"
         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-        class="mt-4 rounded-2xl border border-surface-200 bg-white px-4 py-3"
       />
     </div>
 
