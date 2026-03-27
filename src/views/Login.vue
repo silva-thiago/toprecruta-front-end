@@ -73,9 +73,9 @@ const onSubmit = ({
 
 <template>
   <section
-    class="w-full max-w-110 bg-white dark:bg-neutral-900 p-10 rounded-2xl shadow-lg"
+    class="w-full max-w-110 bg-white dark:bg-neutral-800 p-10 rounded-2xl shadow-lg"
   >
-    <Card role="region" class="dark:bg-neutral-900">
+    <Card role="region" :pt="{ root: { class: 'dark:bg-neutral-800' } }">
       <template #title class="mb-10">
         <h1
           class="text-center text-[32px] font-bold text-brand-dark leading-tight mb-2"
