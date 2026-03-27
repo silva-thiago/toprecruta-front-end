@@ -2,23 +2,24 @@
  * authService.ts
  *
  * JWT simulado 100% no front-end, sem dependências externas.
+ * Credenciais e chave de assinatura lidas do arquivo .env via import.meta.env.
  *
  * Estrutura do token: header.payload.signature
  * - header    : { alg: "HS256", typ: "JWT" } em base64url
  * - payload   : { sub: email, iat, exp } em base64url
- * - signature : assinatura XOR determinística com SECRET
+ * - signature : assinatura XOR determinística com VITE_AUTH_SECRET
  *
  * ⚠️  Em produção, NUNCA assine tokens sem um backend.
  *     Aqui o objetivo é demonstrar o fluxo JWT no escopo
  *     de um desafio front-end com autenticação local.
  */
 
-// ─── Credenciais de acesso ────────────────────────────────────────────────────
-const VALID_EMAIL = "admin@topsolutions.com";
-const VALID_PASSWORD = "Admin@1234";
-const SECRET = "ts-front-secret-2026";
-const TOKEN_KEY = "auth_token";
-const TOKEN_TTL_MS = 25 * 60 * 1000; // 25 minutes in milliseconds
+// ─── Variáveis de ambiente ────────────────────────────────────────────────────
+const VALID_EMAIL = import.meta.env.VITE_AUTH_EMAIL as string;
+const VALID_PASSWORD = import.meta.env.VITE_AUTH_PASSWORD as string;
+const SECRET = import.meta.env.VITE_AUTH_SECRET as string;
+const TOKEN_KEY = import.meta.env.VITE_AUTH_TOKEN_KEY as string;
+const TOKEN_TTL_MS = Number(import.meta.env.VITE_AUTH_TOKEN_TTL_MS);
 
 // ─── Helpers base64url ────────────────────────────────────────────────────────
 const toBase64url = (str: string): string =>
