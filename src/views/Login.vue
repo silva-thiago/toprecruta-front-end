@@ -109,6 +109,7 @@ const onSubmit = ({
               id="email"
               placeholder="Digite seu email"
               type="email"
+              autocomplete="email"
             />
             <Message
               v-if="$field?.invalid"
@@ -120,8 +121,8 @@ const onSubmit = ({
           </FormField>
           <FormField
             v-slot="$field"
-            name="password"
             :pt="{ root: { class: 'flex flex-col gap-2' } }"
+            name="password"
           >
             <label class="font-medium" for="password">Senha</label>
             <div class="relative">
@@ -134,7 +135,8 @@ const onSubmit = ({
                   },
                 }"
                 id="password"
-                placeholder="Digite seu senha"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
               />
               <button
                 type="button"
