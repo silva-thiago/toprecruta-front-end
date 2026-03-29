@@ -189,6 +189,26 @@ const calculateAge = (birthdate: string): number => {
   return age;
 };
 
+const resetForm = () => {
+  birthdateInput.value = "";
+
+  initialValues.value = {
+    name: "",
+    birthdate: "",
+    gender: "",
+    role: "",
+    zipcode: "",
+    street: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+  };
+
+  formKey.value++;
+
+  zipcodeError.value = "";
+};
+
 const onSubmit = ({
   valid,
   values,
@@ -591,10 +611,11 @@ onMounted(() => {
         />
         <div class="flex flex-col md:flex-row gap-4">
           <Button
+            @click="resetForm()"
             label="Limpar"
             severity="primary"
             class="bg-neutral-400! text-neutral-50 px-10 h-11 rounded"
-            type="reset"
+            type="button"
           />
           <Button
             label="Salvar"

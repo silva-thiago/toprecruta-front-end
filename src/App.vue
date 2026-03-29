@@ -23,7 +23,7 @@ const showLayout = computed(() => route.path !== "/login");
 <template>
   <Header v-if="showLayout" />
   <main
-    class="flex items-center justify-center p-8 transition-colors overflow-y-auto"
+    class="flex items-center justify-center p-8 bg-neutral-50 dark:bg-neutral-900 overflow-y-auto"
   >
     <RouterView />
   </main>
