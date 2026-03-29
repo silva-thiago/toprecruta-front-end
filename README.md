@@ -21,7 +21,7 @@ Aplicação front-end desenvolvida como parte do desafio técnico da **Top Solut
 
 ### Autenticação
 - Login com **email** e **senha** (bônus do desafio)
-- Token JWT simulado gerado e armazenado no `localStorage`, com verificação de assinatura e expiração (TTL de 25 minutos)
+- Token JWT simulado gerado e armazenado no `localStorage`, com verificação de assinatura e expiração (TTL configurável via `VITE_AUTH_TOKEN_TTL_MS` no `.env`)
 - Proteção de rotas via `beforeEach` no Vue Router — acesso direto por URL sem autenticação redireciona para `/login`
 - Logout invalida o token e redireciona para a tela de login
 
@@ -41,7 +41,8 @@ Aplicação front-end desenvolvida como parte do desafio técnico da **Top Solut
 - Data de nascimento: máscara `DD/MM/AAAA` com validação de data real
 - CEP: validado via ViaCEP API
 - Função: dropdown com opções pré-definidas
-- CPF no login: validação dos dois dígitos verificadores
+- Email no login: validação do email digitado
+- Senha no login: validação do tamanho mínimo da senha inserida
 - Campos inválidos destacados em vermelho com mensagens de erro
 
 ### Regras de negócio
@@ -62,6 +63,36 @@ Aplicação front-end desenvolvida como parte do desafio técnico da **Top Solut
 
 ---
 
+## Variáveis de ambiente
+
+As credenciais e configurações sensíveis são lidas de um arquivo `.env` na raiz do projeto. Esse arquivo **não é versionado** — copie o exemplo e preencha com os valores desejados:
+
+```bash
+cp .env.example .env
+```
+
+O `.env.example` já está disponível no repositório com as chaves necessárias:
+
+```env
+VITE_AUTH_EMAIL=
+VITE_AUTH_PASSWORD=
+VITE_AUTH_SECRET=
+VITE_AUTH_TOKEN_KEY=
+VITE_AUTH_TOKEN_TTL_MS=
+```
+
+| Variável               	| Descrição                                                                       	| Exemplo Sugerido       	|
+|------------------------	|---------------------------------------------------------------------------------	|------------------------	|
+| VITE_AUTH_EMAIL        	| E-mail predefinido para realizar o login no sistema.                            	| seu@email.com          	|
+| VITE_AUTH_PASSWORD     	| Senha correspondente ao e-mail de administração.                                	| SenhaQualquer@1234     	|
+| VITE_AUTH_SECRET       	| Chave secreta utilizada pelo algoritmo XOR para "assinar" o token JWT simulado. 	| sua-chave-secreta-2026 	|
+| VITE_AUTH_TOKEN_KEY    	| Nome da chave que será utilizada para salvar o token no localStorage.           	| auth_token             	|
+| VITE_AUTH_TOKEN_TTL_MS 	| Tempo de vida do token em milissegundos (Tempo de expiração).                   	| 1500000 (25 minutos)   	|
+
+> **Atenção:** o Vite só expõe variáveis prefixadas com `VITE_` para o código do cliente. Variáveis sem esse prefixo ficam invisíveis no bundle final.
+
+---
+
 ## Como rodar localmente
 
 ```bash
@@ -69,7 +100,11 @@ Aplicação front-end desenvolvida como parte do desafio técnico da **Top Solut
 git clone https://github.com/seu-usuario/toprecruta-front-end.git
 cd toprecruta-front-end
 
-# 2. Instale as dependências (use o gerenciador de sua preferência)
+# 2. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com as credenciais desejadas
+
+# 3. Instale as dependências (use o gerenciador de sua preferência)
 npm install
 # ou
 yarn install
@@ -78,7 +113,7 @@ pnpm install
 # ou
 bun install
 
-# 3. Inicie o servidor de desenvolvimento
+# 4. Inicie o servidor de desenvolvimento
 npm run dev
 # ou
 yarn run dev
@@ -87,7 +122,7 @@ pnpm run dev
 # ou
 bun run dev
 
-# 4. Acesse no navegador
+# 5. Acesse no navegador
 http://localhost:5173
 ```
 
@@ -111,10 +146,10 @@ O output será gerado na pasta `dist/`.
 
 ### Credenciais de acesso
 
-| Campo | Valor                   |
-|-------|-------------------------|
-| email | admin@topsolutions.com  |
-| Senha | Admin@1234              |
+| Campo | Valor                |
+|-------|----------------------|
+| email | `VITE_AUTH_EMAIL`    | // valor inserido no arquivo .env
+| Senha | `VITE_AUTH_PASSWORD` | // valor inserido no arquivo .env
 
 ### Fluxo completo
 
@@ -154,6 +189,9 @@ O `DatePicker` do PrimeVue não insere barras ao digitar. A solução adotada fo
 
 **Parsing de data sem `new Date(isoString)`**
 `new Date("2000-01-15")` interpreta a string como UTC midnight, causando deslocamento de fuso horário no navegador. A conversão é feita manualmente via regex para evitar o problema.
+
+**Variáveis de ambiente com `.env`**
+Credenciais de autenticação (`email`, `senha`, `secret` de assinatura do JWT) e configurações do token (`TOKEN_KEY`, `TOKEN_TTL_MS`) são lidas via `import.meta.env` do Vite. O arquivo `.env` não é versionado — o repositório inclui apenas o `.env.example` com as chaves sem valores, para que cada ambiente configure os seus próprios segredos sem risco de exposição.
 
 **Grid de listagem com CSS nativo**
 O layout dos cards usa `grid-template-columns` com `minmax` e larguras fixas em vez de `grid-cols-12`, garantindo alinhamento preciso entre o cabeçalho de colunas e os valores dos cards independente do conteúdo.
